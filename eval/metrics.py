@@ -17,6 +17,7 @@ from __future__ import annotations
 import json
 import re
 
+from groq import RateLimitError
 from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import BaseModel, Field
 
@@ -112,6 +113,8 @@ def judge_answer(question: str, context: str, answer: str) -> CombinedJudgment:
     prompt = f"QUESTION: {question}\n\nCONTEXT:\n{context}\n\nANSWER:\n{answer}"
     try:
         return llm.invoke([SystemMessage(content=_COMBINED_JUDGE_SYSTEM), HumanMessage(content=prompt)])
+    except RateLimitError:
+        raise  # let the caller's retry/quota handling see this, not a fabricated fail judgment
     except Exception:
         return CombinedJudgment(faithful=False, unsupported_claims=["judge_call_failed"], relevance_score=0.0)
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 
+from groq import RateLimitError
 from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
 from pydantic import BaseModel, Field
 
@@ -61,9 +62,14 @@ def grade_node(state: GraphState) -> dict:
             [SystemMessage(content=_GRADE_SYSTEM), HumanMessage(content=prompt)]
         )
         return {"grade_passed": result.sufficient, "grade_reason": result.reason}
+    except RateLimitError:
+        # Don't fail-closed into a retry loop on a rate limit -- that just burns
+        # more tokens hitting the same wall. Let it propagate so the caller's
+        # quota/backoff handling deals with it instead.
+        raise
     except Exception:
-        # If structured parsing fails, fail closed (treat as insufficient) rather
-        # than risk generating ungrounded from unjudged context.
+        # If structured parsing fails for another reason, fail closed (treat as
+        # insufficient) rather than risk generating ungrounded from unjudged context.
         return {"grade_passed": False, "grade_reason": "grading call failed"}
 
 
