@@ -1,6 +1,7 @@
 langgraph>=0.2
 langchain>=0.3
 langchain-groq>=0.2
+langchain-ollama>=0.2
 langchain-community>=0.3
 qdrant-client>=1.11
 sentence-transformers>=3.1
