@@ -12,6 +12,18 @@ from src.retrieval.pipeline import retrieve as pipeline_retrieve
 
 RETRIEVAL_CONFIG = "hybrid_rerank_agent"
 TOP_K = 5
+# Retrieval still returns/reports TOP_K=5 chunks (so Recall@5 stays meaningful
+# across every ablation config), but each chunk is truncated to this many
+# characters before going into an LLM prompt. Groq's free tier caps total daily
+# tokens; 5 untruncated ~512-token chunks per call was burning the entire daily
+# budget on a single ablation config. ~450 chars (~110 tokens) still covers the
+# lead sentences where these FAQ/guideline chunks put their key facts.
+MAX_CONTEXT_CHARS_PER_CHUNK = 450
+
+
+def format_context(items) -> str:
+    """items: iterable of (chunk_id, text) pairs."""
+    return "\n\n".join(f"[{cid}] {text[:MAX_CONTEXT_CHARS_PER_CHUNK]}" for cid, text in items)
 
 
 def retrieve_node(state: GraphState) -> dict:
@@ -35,7 +47,7 @@ _GRADE_SYSTEM = (
 
 def grade_node(state: GraphState) -> dict:
     llm = config.get_chat_llm()
-    context = "\n\n".join(f"[{d.metadata['chunk_id']}] {d.page_content}" for d in state["documents"])
+    context = format_context((d.metadata["chunk_id"], d.page_content) for d in state["documents"])
     question = state.get("rewritten_question") or state["question"]
     prompt = f"Question: {question}\n\nRetrieved context:\n{context or '(no context retrieved)'}"
 
@@ -125,7 +137,7 @@ _CITATION_RE = CITATION_RE
 def generate_node(state: GraphState) -> dict:
     llm = config.get_chat_llm().bind_tools(TOOLS)
     question = state.get("rewritten_question") or state["question"]
-    context = "\n\n".join(f"[{d.metadata['chunk_id']}] {d.page_content}" for d in state["documents"])
+    context = format_context((d.metadata["chunk_id"], d.page_content) for d in state["documents"])
     insufficient_note = ""
     if state.get("retry_count", 0) >= config.MAX_RETRIES and not state.get("grade_passed", True):
         insufficient_note = (

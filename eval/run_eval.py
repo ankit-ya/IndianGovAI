@@ -14,34 +14,50 @@ import json
 import statistics
 import time
 
+from groq import RateLimitError
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from src import config as app_config
 from src.agent.graph import ask as agent_ask
-from src.agent.nodes import CITATION_RE, GENERATE_SYSTEM_NO_TOOLS
+from src.agent.nodes import GENERATE_SYSTEM_NO_TOOLS, format_context
 from src.retrieval.pipeline import ABLATION_CONFIGS, retrieve as pipeline_retrieve
-from eval.metrics import (
-    aggregate_generation_metrics,
-    aggregate_retrieval_metrics,
-    judge_faithfulness,
-    judge_relevance,
-    looks_like_refusal,
-)
+from eval.metrics import aggregate_generation_metrics, aggregate_retrieval_metrics, judge_answer, looks_like_refusal
 
 EVAL_SET_PATH = app_config.EVAL_DIR / "eval_set.json"
 RESULTS_PATH = app_config.EVAL_RESULTS_DIR / "ablation.json"
+
+
+class DailyQuotaExhausted(Exception):
+    pass
+
+
+def _retry_on_rate_limit(fn, *args, max_attempts=3, **kwargs):
+    """Groq's free tier has both per-minute and per-day token limits. Per-minute
+    limits are worth a short sleep-and-retry; a per-day limit won't clear for a
+    long time, so fail fast and let the caller stop the whole run cleanly instead
+    of burning attempts against a wall."""
+    for attempt in range(max_attempts):
+        try:
+            return fn(*args, **kwargs)
+        except RateLimitError as e:
+            msg = str(e)
+            if "per day" in msg or "TPD" in msg or "RPD" in msg:
+                raise DailyQuotaExhausted(msg) from e
+            if attempt == max_attempts - 1:
+                raise
+            time.sleep(10 * (attempt + 1))
 
 
 def _simple_generate(question: str, hits: list[dict]) -> str:
     """Non-agentic single-shot generation for the pure-retrieval ablation
     rows (no tools, no retry loop -- that's isolated to hybrid_rerank_agent)."""
     llm = app_config.get_chat_llm()
-    context = "\n\n".join(f"[{h['chunk_id']}] {h['text']}" for h in hits)
+    context = format_context((h["chunk_id"], h["text"]) for h in hits)
     messages = [
         SystemMessage(content=GENERATE_SYSTEM_NO_TOOLS),
         HumanMessage(content=f"Question: {question}\n\nRetrieved context:\n{context or '(none)'}"),
     ]
-    response = llm.invoke(messages)
+    response = _retry_on_rate_limit(llm.invoke, messages)
     return response.content or ""
 
 
@@ -50,24 +66,33 @@ def run_config(config_name: str, eval_set: list[dict]) -> dict:
     judged_rows = []
     latencies = []
     retry_counts = []
+    errors = []
 
-    for item in eval_set:
+    for i, item in enumerate(eval_set, start=1):
         question = item["question"]
         is_unanswerable = item["type"] == "unanswerable"
         start = time.perf_counter()
 
-        if config_name == "hybrid_rerank_agent":
-            result = agent_ask(question)
-            hits = [
-                {"chunk_id": d.metadata["chunk_id"], "doc_id": d.metadata["doc_id"]}
-                for d in result["documents"]
-            ]
-            answer = result.get("answer", "")
-            retry_counts.append(result.get("retry_count", 0))
-        else:
-            hits = pipeline_retrieve(question, config_name, top_k=5)
-            answer = _simple_generate(question, hits)
-            retry_counts.append(0)
+        try:
+            if config_name == "hybrid_rerank_agent":
+                result = _retry_on_rate_limit(agent_ask, question)
+                hits = [
+                    {"chunk_id": d.metadata["chunk_id"], "doc_id": d.metadata["doc_id"], "text": d.page_content}
+                    for d in result["documents"]
+                ]
+                answer = result.get("answer", "")
+                retry_counts.append(result.get("retry_count", 0))
+            else:
+                hits = pipeline_retrieve(question, config_name, top_k=5)
+                answer = _simple_generate(question, hits)
+                retry_counts.append(0)
+        except DailyQuotaExhausted:
+            print(f"  [{i}/{len(eval_set)}] daily token quota exhausted, stopping this config early.")
+            break
+        except Exception as e:
+            print(f"  [{i}/{len(eval_set)}] ERROR on question, skipping: {e}")
+            errors.append({"question": question, "error": str(e)})
+            continue
 
         elapsed = time.perf_counter() - start
         latencies.append(elapsed)
@@ -77,33 +102,44 @@ def run_config(config_name: str, eval_set: list[dict]) -> dict:
             {"retrieved_doc_ids": retrieved_doc_ids, "relevant_doc_ids": item["relevant_doc_ids"]}
         )
 
-        context_text = "\n\n".join(h.get("text", "") for h in hits)
-        judgment = judge_faithfulness(question, context_text, answer)
-        relevance = judge_relevance(question, answer)
+        context_text = format_context((h["chunk_id"], h.get("text", "")) for h in hits)
+        try:
+            judgment = _retry_on_rate_limit(judge_answer, question, context_text, answer)
+        except DailyQuotaExhausted:
+            print(f"  [{i}/{len(eval_set)}] daily token quota exhausted during judging, stopping this config early.")
+            break
         judged_rows.append(
             {
                 "faithful": judgment.faithful,
-                "relevance": relevance,
+                "relevance": max(0.0, min(1.0, judgment.relevance_score)),
                 "is_unanswerable": is_unanswerable,
                 "refused": looks_like_refusal(answer),
             }
         )
+        if i % 10 == 0:
+            print(f"  [{i}/{len(eval_set)}] done")
 
     retrieval_metrics = aggregate_retrieval_metrics(retrieval_rows)
     generation_metrics = aggregate_generation_metrics(judged_rows)
     latencies_sorted = sorted(latencies)
-    p50 = statistics.median(latencies_sorted)
-    p95 = latencies_sorted[min(int(len(latencies_sorted) * 0.95), len(latencies_sorted) - 1)]
+    p50 = statistics.median(latencies_sorted) if latencies_sorted else None
+    p95 = (
+        latencies_sorted[min(int(len(latencies_sorted) * 0.95), len(latencies_sorted) - 1)]
+        if latencies_sorted
+        else None
+    )
 
     return {
         "config": config_name,
         "n_questions": len(eval_set),
+        "n_completed": len(judged_rows),
         "retrieval": retrieval_metrics,
         "generation": generation_metrics,
-        "latency_p50_s": round(p50, 3),
-        "latency_p95_s": round(p95, 3),
+        "latency_p50_s": round(p50, 3) if p50 is not None else None,
+        "latency_p95_s": round(p95, 3) if p95 is not None else None,
         "avg_retry_count": round(sum(retry_counts) / len(retry_counts), 3) if retry_counts else 0,
         "cost_per_query_usd": 0.0,  # Groq free tier
+        "errors": errors,
     }
 
 
@@ -130,6 +166,9 @@ def main():
         all_results[cfg] = result
         RESULTS_PATH.write_text(json.dumps(all_results, indent=2), encoding="utf-8")
         print(json.dumps(result, indent=2))
+        if result["n_completed"] < result["n_questions"]:
+            print(f"Config {cfg} stopped early ({result['n_completed']}/{result['n_questions']}) -- likely daily quota. Stopping run.")
+            break
 
 
 if __name__ == "__main__":
