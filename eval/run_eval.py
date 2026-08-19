@@ -143,28 +143,54 @@ def run_config(config_name: str, eval_set: list[dict]) -> dict:
     }
 
 
+def stratified_sample(eval_set: list[dict], limit: int) -> list[dict]:
+    """Proportionally sample across question types so a small --limit run still
+    exercises single-hop, multi-hop, eligibility-reasoning, AND unanswerable
+    questions -- a plain eval_set[:limit] would only grab single-hop questions
+    (they're listed first) and completely miss refusal-behavior testing."""
+    by_type: dict[str, list[dict]] = {}
+    for item in eval_set:
+        by_type.setdefault(item["type"], []).append(item)
+
+    total = len(eval_set)
+    sampled: list[dict] = []
+    for qtype, items in by_type.items():
+        share = max(1, round(limit * len(items) / total))
+        sampled.extend(items[:share])
+    return sampled[:limit] if len(sampled) > limit else sampled
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", choices=list(ABLATION_CONFIGS.keys()))
     parser.add_argument("--all", action="store_true")
+    parser.add_argument(
+        "--limit", type=int, default=None,
+        help="Run on a small stratified subset instead of the full 50 questions (quick sanity check). "
+        "Writes to ablation_smoketest.json instead of ablation.json.",
+    )
     args = parser.parse_args()
 
     eval_set = json.loads(EVAL_SET_PATH.read_text(encoding="utf-8"))
+    if args.limit:
+        eval_set = stratified_sample(eval_set, args.limit)
+        print(f"--limit {args.limit}: using {len(eval_set)} questions ({[e['type'] for e in eval_set]})")
 
     configs = list(ABLATION_CONFIGS.keys()) if args.all else [args.config]
     if not configs or configs == [None]:
         parser.error("pass --config <name> or --all")
 
+    results_path = app_config.EVAL_RESULTS_DIR / ("ablation_smoketest.json" if args.limit else "ablation.json")
     app_config.EVAL_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     all_results = {}
-    if RESULTS_PATH.exists():
-        all_results = json.loads(RESULTS_PATH.read_text(encoding="utf-8"))
+    if results_path.exists():
+        all_results = json.loads(results_path.read_text(encoding="utf-8"))
 
     for cfg in configs:
         print(f"Running config: {cfg} ...")
         result = run_config(cfg, eval_set)
         all_results[cfg] = result
-        RESULTS_PATH.write_text(json.dumps(all_results, indent=2), encoding="utf-8")
+        results_path.write_text(json.dumps(all_results, indent=2), encoding="utf-8")
         print(json.dumps(result, indent=2))
         if result["n_completed"] < result["n_questions"]:
             print(f"Config {cfg} stopped early ({result['n_completed']}/{result['n_questions']}) -- likely daily quota. Stopping run.")
