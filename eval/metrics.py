@@ -82,19 +82,25 @@ _FAITHFULNESS_SYSTEM = (
     "determine whether every factual claim in the ANSWER is directly supported "
     "by the CONTEXT. List any claims that are NOT supported (hallucinated or "
     "unverifiable from context). If the answer explicitly refuses / says "
-    "information is insufficient, treat that as faithful (no unsupported claims)."
+    "information is insufficient, treat that as faithful (no unsupported claims). "
+    "Respond with a JSON object only."
 )
 
 _RELEVANCE_SYSTEM = (
     "Rate from 0.0 to 1.0 how directly the ANSWER addresses the QUESTION asked "
     "(ignore whether it's factually correct -- just relevance/on-topic-ness). "
     "A correct refusal to answer an unanswerable question still scores 1.0 if "
-    "it directly addresses why it can't answer."
+    "it directly addresses why it can't answer. Respond with a JSON object only."
 )
+
+# method="json_mode": the Groq-hosted models used here answer directly in JSON
+# content rather than reliably emitting a forced tool call (the with_structured_output
+# default), which Groq's API rejects even when the JSON produced was correct.
+# See src/agent/nodes.py grade_node for the same fix with a fuller explanation.
 
 
 def judge_faithfulness(question: str, context: str, answer: str) -> FaithfulnessJudgment:
-    llm = config.get_chat_llm().with_structured_output(FaithfulnessJudgment)
+    llm = config.get_chat_llm().with_structured_output(FaithfulnessJudgment, method="json_mode")
     prompt = f"QUESTION: {question}\n\nCONTEXT:\n{context}\n\nANSWER:\n{answer}"
     try:
         return llm.invoke([SystemMessage(content=_FAITHFULNESS_SYSTEM), HumanMessage(content=prompt)])
@@ -103,7 +109,7 @@ def judge_faithfulness(question: str, context: str, answer: str) -> Faithfulness
 
 
 def judge_relevance(question: str, answer: str) -> float:
-    llm = config.get_chat_llm().with_structured_output(RelevanceJudgment)
+    llm = config.get_chat_llm().with_structured_output(RelevanceJudgment, method="json_mode")
     prompt = f"QUESTION: {question}\n\nANSWER:\n{answer}"
     try:
         result: RelevanceJudgment = llm.invoke(

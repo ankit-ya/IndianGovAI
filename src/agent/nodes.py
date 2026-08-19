@@ -39,7 +39,11 @@ def grade_node(state: GraphState) -> dict:
     question = state.get("rewritten_question") or state["question"]
     prompt = f"Question: {question}\n\nRetrieved context:\n{context or '(no context retrieved)'}"
 
-    structured = llm.with_structured_output(GradeResult)
+    # method="json_mode" (not the default forced-tool-call mode): the Groq-hosted
+    # oss models here answer directly in JSON content rather than emitting a tool
+    # call, which the default mode rejects with a 400 ("Tool choice is required,
+    # but model did not call a tool") even though the JSON it produced was correct.
+    structured = llm.with_structured_output(GradeResult, method="json_mode")
     try:
         result: GradeResult = structured.invoke(
             [SystemMessage(content=_GRADE_SYSTEM), HumanMessage(content=prompt)]
@@ -76,8 +80,9 @@ GENERATE_SYSTEM = (
     "You are an assistant answering questions about Indian government welfare "
     "schemes (PMAY, Ayushman Bharat, PM-KISAN, and others) using ONLY the "
     "retrieved context and tool outputs provided to you. Rules:\n"
-    "1. Every factual claim must carry an inline citation like [chunk_id] "
-    "matching a chunk_id from the context.\n"
+    "1. Every factual claim must carry an inline citation using plain ASCII "
+    "square brackets exactly like this: [chunk_id], matching a chunk_id from "
+    "the context (not any other bracket style).\n"
     "2. If the context is insufficient to answer confidently, say so explicitly "
     "and do NOT guess or use outside knowledge.\n"
     "3. Use the eligibility_calculator, scheme_comparison, or document_lookup "
@@ -87,7 +92,12 @@ GENERATE_SYSTEM = (
 )
 _GENERATE_SYSTEM = GENERATE_SYSTEM  # backcompat alias within this module
 
-CITATION_RE = re.compile(r"\[([\w\-]+#c\d+)\]")
+
+# Accepts ASCII [chunk_id] as instructed, plus a couple of Unicode bracket
+# styles (e.g. full-width 【chunk_id】) that Groq-hosted models sometimes use
+# for citations regardless of instruction -- matching robustly here is cheaper
+# than fighting model output formatting.
+CITATION_RE = re.compile(r"[\[【(]([\w\-]+#c\d+)[\]】)]")
 _CITATION_RE = CITATION_RE
 
 
