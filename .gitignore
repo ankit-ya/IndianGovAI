@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+.env
+data/raw/*.pdf
+data/processed/
+qdrant_local/
+*.log
+.pytest_cache/
+.ragas_cache/
+.DS_Store
