@@ -18,7 +18,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 from src import config as app_config
 from src.agent.graph import ask as agent_ask
-from src.agent.nodes import CITATION_RE, GENERATE_SYSTEM
+from src.agent.nodes import CITATION_RE, GENERATE_SYSTEM_NO_TOOLS
 from src.retrieval.pipeline import ABLATION_CONFIGS, retrieve as pipeline_retrieve
 from eval.metrics import (
     aggregate_generation_metrics,
@@ -38,7 +38,7 @@ def _simple_generate(question: str, hits: list[dict]) -> str:
     llm = app_config.get_chat_llm()
     context = "\n\n".join(f"[{h['chunk_id']}] {h['text']}" for h in hits)
     messages = [
-        SystemMessage(content=GENERATE_SYSTEM),
+        SystemMessage(content=GENERATE_SYSTEM_NO_TOOLS),
         HumanMessage(content=f"Question: {question}\n\nRetrieved context:\n{context or '(none)'}"),
     ]
     response = llm.invoke(messages)

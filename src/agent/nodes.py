@@ -76,19 +76,40 @@ def rewrite_node(state: GraphState) -> dict:
     }
 
 
+_CITATION_RULE = (
+    "Every factual claim must carry an inline citation using plain ASCII square "
+    "brackets exactly like this: [chunk_id], matching a chunk_id from the context "
+    "(not any other bracket style)."
+)
+_REFUSAL_RULE = (
+    "If the context is insufficient to answer confidently, say so explicitly and "
+    "do NOT guess or use outside knowledge."
+)
+
+# Used only where tools are actually bound (the agent's generate_node). A model
+# told to "use tool X" will sometimes attempt a tool call even when no tools were
+# bound to that particular request, which Groq's API then rejects outright -- see
+# GENERATE_SYSTEM_NO_TOOLS below for the ablation-runner's tool-free variant.
 GENERATE_SYSTEM = (
     "You are an assistant answering questions about Indian government welfare "
     "schemes (PMAY, Ayushman Bharat, PM-KISAN, and others) using ONLY the "
-    "retrieved context and tool outputs provided to you. Rules:\n"
-    "1. Every factual claim must carry an inline citation using plain ASCII "
-    "square brackets exactly like this: [chunk_id], matching a chunk_id from "
-    "the context (not any other bracket style).\n"
-    "2. If the context is insufficient to answer confidently, say so explicitly "
-    "and do NOT guess or use outside knowledge.\n"
+    f"retrieved context and tool outputs provided to you. Rules:\n1. {_CITATION_RULE}\n"
+    f"2. {_REFUSAL_RULE}\n"
     "3. Use the eligibility_calculator, scheme_comparison, or document_lookup "
     "tools when the question needs rule application, cross-scheme comparison, "
     "or a specific section you don't already have.\n"
     "4. Keep answers concise and directly responsive."
+)
+
+# For the non-agent ablation configs (eval/run_eval.py's _simple_generate), which
+# invoke the LLM directly with no tools bound -- omits the tool-use rule so the
+# model doesn't attempt a tool call that isn't actually available on that request.
+GENERATE_SYSTEM_NO_TOOLS = (
+    "You are an assistant answering questions about Indian government welfare "
+    "schemes (PMAY, Ayushman Bharat, PM-KISAN, and others) using ONLY the "
+    f"retrieved context provided to you. Rules:\n1. {_CITATION_RULE}\n"
+    f"2. {_REFUSAL_RULE}\n"
+    "3. Keep answers concise and directly responsive."
 )
 _GENERATE_SYSTEM = GENERATE_SYSTEM  # backcompat alias within this module
 
