@@ -94,7 +94,10 @@ _COMBINED_JUDGE_SYSTEM = (
     "2. Relevance: rate 0.0-1.0 how directly the ANSWER addresses the QUESTION "
     "asked, regardless of factual correctness. A correct refusal to answer an "
     "unanswerable question still scores 1.0 if it directly addresses why it can't "
-    "answer.\nRespond with a JSON object only."
+    "answer.\n\n"
+    "Respond with ONLY a JSON object using exactly these keys (no others, no "
+    "nesting):\n"
+    '{"faithful": true|false, "unsupported_claims": ["..."], "relevance_score": 0.0}'
 )
 
 # method="json_mode": the Groq-hosted models used here answer directly in JSON
