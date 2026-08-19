@@ -16,6 +16,8 @@ def rerank(query: str, candidates: list[dict], top_k: int = 5) -> list[dict]:
     out = []
     for item, score in scored[:top_k]:
         item = dict(item)
+        item["fusion_score"] = item["score"]  # keep the pre-rerank RRF score for inspection
         item["rerank_score"] = float(score)
+        item["score"] = float(score)  # score now reflects final ranking order
         out.append(item)
     return out

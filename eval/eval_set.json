@@ -1,0 +1,302 @@
+[
+  {
+    "question": "What is the maximum cultivable landholding a family can have to be eligible for PM-KISAN?",
+    "ground_truth_answer": "Up to 2 hectares of cultivable land, as per land records of the State/UT as on 01.02.2019.",
+    "relevant_doc_ids": ["pmkisan_faq"],
+    "type": "single_hop"
+  },
+  {
+    "question": "What is the annual benefit amount under PM-KISAN and how is it disbursed?",
+    "ground_truth_answer": "Rs. 6,000 per year per family, paid in 3 equal installments of Rs. 2,000 every four months.",
+    "relevant_doc_ids": ["pmkisan_faq"],
+    "type": "single_hop"
+  },
+  {
+    "question": "What was the cutoff date for determining PM-KISAN beneficiary eligibility?",
+    "ground_truth_answer": "01.02.2019 — no changes after that date are considered for the following 5 years, except land transfer due to succession on death of the landholder.",
+    "relevant_doc_ids": ["pmkisan_faq"],
+    "type": "single_hop"
+  },
+  {
+    "question": "What is the annual household income ceiling for the EWS category under PMAY-Urban CLSS?",
+    "ground_truth_answer": "Annual household income up to Rs. 3,00,000 (Rupees Three Lakhs).",
+    "relevant_doc_ids": ["pmay_urban_clss_ews_lig_guidelines"],
+    "type": "single_hop"
+  },
+  {
+    "question": "What is the annual household income range for the LIG category under PMAY-Urban CLSS?",
+    "ground_truth_answer": "Between Rs. 3,00,001 and up to Rs. 6,00,000 per annum.",
+    "relevant_doc_ids": ["pmay_urban_clss_ews_lig_guidelines"],
+    "type": "single_hop"
+  },
+  {
+    "question": "What interest subsidy rate is offered under the PMAY-Urban Credit Linked Subsidy Scheme?",
+    "ground_truth_answer": "6.5% per annum, with the Net Present Value of the subsidy calculated at a 9% discount rate.",
+    "relevant_doc_ids": ["pmay_urban_clss_ews_lig_guidelines"],
+    "type": "single_hop"
+  },
+  {
+    "question": "What is the maximum loan amount eligible for the credit-linked interest subsidy under PMAY-Urban CLSS?",
+    "ground_truth_answer": "Rs. 6 lakh; any additional loan amount beyond that is at non-subsidized rates.",
+    "relevant_doc_ids": ["pmay_urban_clss_ews_lig_guidelines"],
+    "type": "single_hop"
+  },
+  {
+    "question": "What is the maximum carpet area for an EWS house under PMAY-Urban CLSS?",
+    "ground_truth_answer": "Up to 30 square metres.",
+    "relevant_doc_ids": ["pmay_urban_clss_ews_lig_guidelines"],
+    "type": "single_hop"
+  },
+  {
+    "question": "What is the maximum carpet area for a LIG house under PMAY-Urban CLSS?",
+    "ground_truth_answer": "Up to 60 square metres.",
+    "relevant_doc_ids": ["pmay_urban_clss_ews_lig_guidelines"],
+    "type": "single_hop"
+  },
+  {
+    "question": "What is the unit assistance amount for house construction under PMAY-Gramin in plain areas?",
+    "ground_truth_answer": "Rs. 1.20 lakh per house.",
+    "relevant_doc_ids": ["pmay_gramin_guidelines_2022"],
+    "type": "single_hop"
+  },
+  {
+    "question": "What is the PMAY-Gramin unit assistance amount in hilly states, North Eastern states, J&K, Ladakh, and LWE-affected districts?",
+    "ground_truth_answer": "Rs. 1.30 lakh per house.",
+    "relevant_doc_ids": ["pmay_gramin_guidelines_2022"],
+    "type": "single_hop"
+  },
+  {
+    "question": "What is the minimum house size mandated under PMAY-Gramin?",
+    "ground_truth_answer": "25 square metres (increased from the earlier 20 sq.m.), including a hygienic cooking space.",
+    "relevant_doc_ids": ["pmay_gramin_guidelines_2022"],
+    "type": "single_hop"
+  },
+  {
+    "question": "From what date has PMAY-Gramin been implemented?",
+    "ground_truth_answer": "With effect from 1st April, 2016.",
+    "relevant_doc_ids": ["pmay_gramin_guidelines_2022"],
+    "type": "single_hop"
+  },
+  {
+    "question": "What data source is used to identify eligible beneficiaries under PMAY-Gramin?",
+    "ground_truth_answer": "Housing deprivation parameters from the Socio Economic and Caste Census (SECC) 2011, verified by Gram Sabhas.",
+    "relevant_doc_ids": ["pmay_gramin_guidelines_2022"],
+    "type": "single_hop"
+  },
+  {
+    "question": "What is the health cover amount provided per family per year under Ayushman Bharat PM-JAY?",
+    "ground_truth_answer": "Rs. 5 lakh per family per year for secondary and tertiary care hospitalization.",
+    "relevant_doc_ids": ["ayushman_bharat_pmjay_operation_manual"],
+    "type": "single_hop"
+  },
+  {
+    "question": "Approximately how many families does Ayushman Bharat PM-JAY aim to cover?",
+    "ground_truth_answer": "About 10.74 crore families (approximately 50 crore beneficiaries), covering the bottom 40% of the Indian population.",
+    "relevant_doc_ids": ["ayushman_bharat_pmjay_operation_manual"],
+    "type": "single_hop"
+  },
+  {
+    "question": "When was the Ayushman Bharat PM-JAY scheme launched?",
+    "ground_truth_answer": "23rd September 2018.",
+    "relevant_doc_ids": ["ayushman_bharat_pmjay_operation_manual"],
+    "type": "single_hop"
+  },
+  {
+    "question": "Under West Bengal's Krishak Bandhu scheme, what annual financial assistance does a farmer with 1 acre or more of cultivable land receive?",
+    "ground_truth_answer": "Rs. 10,000 per annum, paid in two equal installments for the Kharif and Rabi seasons.",
+    "relevant_doc_ids": ["west_bengal_krishak_bandhu_faq"],
+    "type": "single_hop"
+  },
+  {
+    "question": "What is the minimum annual assistance under Krishak Bandhu for farmers with less than 1 acre of land?",
+    "ground_truth_answer": "A minimum of Rs. 4,000 per annum, on a pro-rata basis.",
+    "relevant_doc_ids": ["west_bengal_krishak_bandhu_faq"],
+    "type": "single_hop"
+  },
+  {
+    "question": "Is a farmer whose family included an income-tax payee in the last assessment year eligible for PM-KISAN?",
+    "ground_truth_answer": "No — if any member of the family paid income tax in the last assessment year, the family is not eligible for PM-KISAN benefits.",
+    "relevant_doc_ids": ["pmkisan_faq"],
+    "type": "single_hop"
+  },
+  {
+    "question": "PMAY-Urban CLSS uses an income-based eligibility mechanism (EWS/LIG income bands). What eligibility mechanism does PM-KISAN use instead, and what is its threshold?",
+    "ground_truth_answer": "PM-KISAN uses a land-holding based mechanism, not income: families with cultivable landholding up to 2 hectares are eligible, versus PMAY-Urban CLSS's income ceilings (EWS up to Rs. 3 lakh, LIG Rs. 3-6 lakh).",
+    "relevant_doc_ids": ["pmay_urban_clss_ews_lig_guidelines", "pmkisan_faq"],
+    "type": "multi_hop"
+  },
+  {
+    "question": "If a family's 2-hectare landholding is split into parcels across different members in different villages, are they still eligible for PM-KISAN, and how is the benefit paid?",
+    "ground_truth_answer": "Yes — all land held by the family is pooled together for determining eligibility (up to the 2-hectare ceiling), and the maximum benefit of Rs. 6,000/year is paid to the family member with the largest individual landholding (or the eldest, if tied).",
+    "relevant_doc_ids": ["pmkisan_faq"],
+    "type": "multi_hop"
+  },
+  {
+    "question": "How does the West Bengal Krishak Bandhu benefit for a farmer with under 1 acre compare to the flat PM-KISAN benefit for anyone up to 2 hectares?",
+    "ground_truth_answer": "Krishak Bandhu pays a minimum of Rs. 4,000/year pro-rata for less than 1 acre (scaling up to Rs. 10,000/year at 1+ acre), whereas PM-KISAN pays a flat Rs. 6,000/year regardless of exact landholding size, as long as it's up to 2 hectares.",
+    "relevant_doc_ids": ["west_bengal_krishak_bandhu_faq", "pmkisan_faq"],
+    "type": "multi_hop"
+  },
+  {
+    "question": "Both PMAY-Gramin and Ayushman Bharat PM-JAY rely on SECC 2011 data for beneficiary identification. What kind of deprivation does each use it to identify?",
+    "ground_truth_answer": "PMAY-Gramin uses SECC 2011 housing deprivation parameters (houseless households, kutcha wall/roof housing) to select beneficiaries for housing assistance, while PM-JAY uses SECC 2011 socio-economic deprivation and occupational criteria to identify vulnerable families for health cover.",
+    "relevant_doc_ids": ["pmay_gramin_guidelines_2022", "ayushman_bharat_pmjay_operation_manual"],
+    "type": "multi_hop"
+  },
+  {
+    "question": "How do the carpet area limits for EWS and LIG houses differ under PMAY-Urban CLSS, and how does that relate to their income bands?",
+    "ground_truth_answer": "EWS households (income up to Rs. 3 lakh) are capped at 30 sq.m. carpet area, while LIG households (income Rs. 3-6 lakh, the higher-income band) get a larger cap of 60 sq.m.",
+    "relevant_doc_ids": ["pmay_urban_clss_ews_lig_guidelines"],
+    "type": "multi_hop"
+  },
+  {
+    "question": "What is the difference in unit assistance amount between plain areas and hilly/NE/LWE areas under PMAY-Gramin, in rupees?",
+    "ground_truth_answer": "Rs. 10,000 — Rs. 1.30 lakh in hilly/difficult areas versus Rs. 1.20 lakh in plain areas.",
+    "relevant_doc_ids": ["pmay_gramin_guidelines_2022"],
+    "type": "multi_hop"
+  },
+  {
+    "question": "A retired government employee draws a monthly pension of Rs. 12,000. Would they be eligible for PM-KISAN? Would the answer differ if their pension were Rs. 9,000/month instead?",
+    "ground_truth_answer": "At Rs. 12,000/month they are NOT eligible, since PM-KISAN excludes superannuated/retired pensioners drawing Rs. 10,000/month or more. At Rs. 9,000/month, the pension-based exclusion would not apply (they could still be eligible if they meet the land criteria and no other exclusion applies).",
+    "relevant_doc_ids": ["pmkisan_faq"],
+    "type": "multi_hop"
+  },
+  {
+    "question": "Under PMAY-Urban CLSS, what happens to the interest subsidy on the portion of a home loan that exceeds the Rs. 6 lakh cap?",
+    "ground_truth_answer": "The 6.5% credit-linked subsidy only applies to loan amounts up to Rs. 6 lakh; any additional loan amount beyond Rs. 6 lakh is charged at the non-subsidized rate.",
+    "relevant_doc_ids": ["pmay_urban_clss_ews_lig_guidelines"],
+    "type": "multi_hop"
+  },
+  {
+    "question": "PM-KISAN caps eligibility at 2 hectares of land, while West Bengal's Krishak Bandhu has no stated upper land ceiling. For a farmer with 3 hectares of land in West Bengal, which of these two schemes could they draw benefits from?",
+    "ground_truth_answer": "They would not be eligible for PM-KISAN (landholding exceeds the 2-hectare ceiling), but based on the retrieved Krishak Bandhu FAQ, that scheme's benefit structure (flat Rs. 10,000/year for 1+ acre, no stated upper ceiling) does not exclude larger landholdings, so they could potentially still draw the Krishak Bandhu benefit.",
+    "relevant_doc_ids": ["pmkisan_faq", "west_bengal_krishak_bandhu_faq"],
+    "type": "multi_hop"
+  },
+  {
+    "question": "If a household's annual income is exactly Rs. 3,00,000, are they classified as EWS or LIG under PMAY-Urban CLSS, and what carpet area cap applies to them?",
+    "ground_truth_answer": "EWS is defined as income \"up to Rs. 3,00,000\", so a household earning exactly Rs. 3,00,000 falls in EWS, meaning the 30 sq.m. carpet area cap applies (not the 60 sq.m. LIG cap, which starts at Rs. 3,00,001).",
+    "relevant_doc_ids": ["pmay_urban_clss_ews_lig_guidelines"],
+    "type": "multi_hop"
+  },
+  {
+    "question": "Which scheme in this corpus provides direct cash assistance for house construction, and which provides health insurance cover — PMAY-Gramin or Ayushman Bharat PM-JAY — and what are their respective amounts?",
+    "ground_truth_answer": "PMAY-Gramin provides direct cash unit assistance for house construction (Rs. 1.20 lakh in plains, Rs. 1.30 lakh in hilly/NE/LWE areas). Ayushman Bharat PM-JAY provides a health insurance cover of Rs. 5 lakh per family per year, not cash for housing.",
+    "relevant_doc_ids": ["pmay_gramin_guidelines_2022", "ayushman_bharat_pmjay_operation_manual"],
+    "type": "multi_hop"
+  },
+  {
+    "question": "If two farmer families are individually recorded on a single joint landholding of more than 2 hectares, but each family's individual share is 2 hectares or less, how many separate PM-KISAN benefits can be claimed?",
+    "ground_truth_answer": "Each such farmer family is eligible for its own separate benefit of up to Rs. 6,000/year, provided they are otherwise eligible per the scheme guidelines.",
+    "relevant_doc_ids": ["pmkisan_faq"],
+    "type": "multi_hop"
+  },
+  {
+    "question": "How many installments per year does PM-KISAN pay versus West Bengal Krishak Bandhu, and how much is each installment (for a farmer with 1+ acre under Krishak Bandhu)?",
+    "ground_truth_answer": "PM-KISAN pays 3 installments of Rs. 2,000 each (every 4 months). Krishak Bandhu pays 2 installments (Kharif and Rabi seasons); for a farmer with 1+ acre receiving the full Rs. 10,000/year, each installment would be Rs. 5,000.",
+    "relevant_doc_ids": ["pmkisan_faq", "west_bengal_krishak_bandhu_faq"],
+    "type": "multi_hop"
+  },
+  {
+    "question": "How does PMAY-Urban CLSS's definition of a beneficiary family (husband, wife, unmarried children) differ from PM-KISAN's definition of a farmer family (husband, wife, minor children)?",
+    "ground_truth_answer": "PMAY-Urban CLSS defines the family by marital status of the children (husband, wife, and unmarried sons/daughters, regardless of age), while PM-KISAN defines it by the children's age (husband, wife, and minor children specifically).",
+    "relevant_doc_ids": ["pmay_urban_clss_ews_lig_guidelines", "pmkisan_faq"],
+    "type": "multi_hop"
+  },
+  {
+    "question": "PMAY has both an urban component (PMAY-Urban CLSS) and a rural component (PMAY-Gramin). How do their support mechanisms differ — one is a credit-linked interest subsidy and the other is direct unit assistance — and what are the respective amounts?",
+    "ground_truth_answer": "PMAY-Urban CLSS provides a 6.5% interest subsidy on home loans up to Rs. 6 lakh (not direct cash), while PMAY-Gramin provides direct unit assistance cash of Rs. 1.20 lakh (plains) or Rs. 1.30 lakh (hilly/NE/LWE areas) for house construction.",
+    "relevant_doc_ids": ["pmay_urban_clss_ews_lig_guidelines", "pmay_gramin_guidelines_2022"],
+    "type": "multi_hop"
+  },
+  {
+    "question": "A family owns 1.5 hectares of cultivable land, no member is a government employee, pensioner, or income-tax payee. Are they eligible for PM-KISAN, and what annual benefit would they receive?",
+    "ground_truth_answer": "Yes, they are eligible — 1.5 hectares is within the 2-hectare ceiling and no exclusion criteria apply — and they would receive Rs. 6,000/year in 3 installments of Rs. 2,000.",
+    "relevant_doc_ids": ["pmkisan_faq"],
+    "type": "eligibility_reasoning"
+  },
+  {
+    "question": "A household earns Rs. 5,50,000 annually and wants a PMAY-Urban CLSS-subsidized home loan of Rs. 6 lakh. Which income category do they fall under, and what interest subsidy rate applies?",
+    "ground_truth_answer": "They fall under LIG (income between Rs. 3,00,001 and Rs. 6,00,000), and the 6.5% interest subsidy applies to their Rs. 6 lakh loan since it's within the subsidy cap.",
+    "relevant_doc_ids": ["pmay_urban_clss_ews_lig_guidelines"],
+    "type": "eligibility_reasoning"
+  },
+  {
+    "question": "A household earning Rs. 3,50,000/year wants to know if the 30 sq.m. EWS carpet area limit applies to them under PMAY-Urban CLSS.",
+    "ground_truth_answer": "No — at Rs. 3,50,000/year they fall into the LIG category (Rs. 3,00,001-6,00,000), not EWS (up to Rs. 3,00,000), so their applicable carpet area cap is 60 sq.m., not 30 sq.m.",
+    "relevant_doc_ids": ["pmay_urban_clss_ews_lig_guidelines"],
+    "type": "eligibility_reasoning"
+  },
+  {
+    "question": "A West Bengal farmer has 0.4 acres of land and applies under Krishak Bandhu. Will they receive the full Rs. 10,000, and if not, how is their assistance determined?",
+    "ground_truth_answer": "No, they will not receive the full Rs. 10,000 since that requires 1 acre or more. Their assistance is calculated pro-rata for their smaller holding, subject to a guaranteed minimum of Rs. 4,000/year — the FAQ does not give the exact per-acre pro-rata formula beyond stating this floor.",
+    "relevant_doc_ids": ["west_bengal_krishak_bandhu_faq"],
+    "type": "eligibility_reasoning"
+  },
+  {
+    "question": "A family's total landholding is 2.2 hectares. Are they eligible for PM-KISAN?",
+    "ground_truth_answer": "No — PM-KISAN's ceiling is landholding up to 2 hectares, and 2.2 hectares exceeds that.",
+    "relevant_doc_ids": ["pmkisan_faq"],
+    "type": "eligibility_reasoning"
+  },
+  {
+    "question": "A retired government pensioner draws Rs. 8,500 per month. Based on PM-KISAN's exclusion criteria, are they eligible if they also meet the land ceiling?",
+    "ground_truth_answer": "Yes, potentially — PM-KISAN excludes pensioners drawing Rs. 10,000/month or more; at Rs. 8,500/month they fall below that threshold, so the pension-based exclusion doesn't apply, and they'd be eligible if the land ceiling and other exclusions are also satisfied.",
+    "relevant_doc_ids": ["pmkisan_faq"],
+    "type": "eligibility_reasoning"
+  },
+  {
+    "question": "A practicing chartered accountant registered with ICAI has a family that separately owns 1 hectare of farmland. Are they eligible for PM-KISAN?",
+    "ground_truth_answer": "No — PM-KISAN explicitly excludes professionals like chartered accountants (along with doctors, engineers, lawyers, and architects) who are registered with a professional body and carrying out practice, regardless of land holding.",
+    "relevant_doc_ids": ["pmkisan_faq"],
+    "type": "eligibility_reasoning"
+  },
+  {
+    "question": "A household earning Rs. 2,90,000/year wants to build a house with a carpet area of 35 sq.m. under the PMAY-Urban EWS CLSS subsidy. Does their income qualify them as EWS, and does the proposed house size meet the EWS carpet area cap?",
+    "ground_truth_answer": "Their income qualifies them as EWS (under the Rs. 3,00,000 ceiling), but the proposed 35 sq.m. house exceeds the EWS carpet area cap of 30 sq.m., so as planned it would not meet the EWS CLSS size limit.",
+    "relevant_doc_ids": ["pmay_urban_clss_ews_lig_guidelines"],
+    "type": "eligibility_reasoning"
+  },
+  {
+    "question": "A landless agricultural laborer with no land title or land records works on rented land in West Bengal. Are they eligible for either PM-KISAN or Krishak Bandhu?",
+    "ground_truth_answer": "No for both — PM-KISAN explicitly states landholding is the sole criterion and a person without land in their name is not eligible, and Krishak Bandhu enrollment requires land documents (RoR / Self Declaration with Land Documents), so a landless laborer without land records would not qualify for either.",
+    "relevant_doc_ids": ["pmkisan_faq", "west_bengal_krishak_bandhu_faq"],
+    "type": "eligibility_reasoning"
+  },
+  {
+    "question": "A farmer family in Odisha with 1.8 hectares of land is deciding between PM-KISAN and Odisha's own KALIA scheme. Based purely on PM-KISAN's 2-hectare land ceiling, would this family qualify for PM-KISAN?",
+    "ground_truth_answer": "Yes, based on the land ceiling alone, 1.8 hectares is within PM-KISAN's 2-hectare limit, so they would meet that criterion (subject to the other exclusion criteria such as government employment, pension, or income-tax status not applying).",
+    "relevant_doc_ids": ["pmkisan_faq"],
+    "type": "eligibility_reasoning"
+  },
+  {
+    "question": "What is the current annual household income ceiling for Ayushman Bharat PM-JAY beneficiary eligibility?",
+    "ground_truth_answer": "This is not answerable from the corpus — PM-JAY eligibility is based on SECC 2011 socio-economic deprivation and occupational criteria, not a declared income ceiling, and the ingested PM-JAY documents (hospital operations/claims manuals) do not contain an income-based eligibility threshold.",
+    "relevant_doc_ids": [],
+    "type": "unanswerable"
+  },
+  {
+    "question": "What is the exact per-acre pro-rata formula used to calculate West Bengal Krishak Bandhu assistance for farmers with less than 1 acre of land?",
+    "ground_truth_answer": "This is not answerable from the corpus — the Krishak Bandhu FAQ states only that assistance is pro-rata with a guaranteed minimum of Rs. 4,000/year for less than 1 acre; it does not specify the exact per-acre calculation formula.",
+    "relevant_doc_ids": [],
+    "type": "unanswerable"
+  },
+  {
+    "question": "What is the GST treatment applicable to interest subsidies disbursed under PMAY-Urban CLSS?",
+    "ground_truth_answer": "This is not answerable from the corpus — the ingested CLSS operational guidelines do not discuss any GST or tax treatment of the disbursed interest subsidy.",
+    "relevant_doc_ids": [],
+    "type": "unanswerable"
+  },
+  {
+    "question": "What is the minimum CIBIL or credit score required for a home loan applicant to avail the PMAY-Urban CLSS interest subsidy?",
+    "ground_truth_answer": "This is not answerable from the corpus — the CLSS guidelines do not mention any credit score requirement; loan sanction criteria are left to the Primary Lending Institution's own norms, which aren't detailed in this document.",
+    "relevant_doc_ids": [],
+    "type": "unanswerable"
+  },
+  {
+    "question": "How many houses had been completed under PMAY-Gramin as of 2026?",
+    "ground_truth_answer": "This is not answerable from the corpus — the ingested PMAY-Gramin guidelines document sets a target of 2.95 crore houses by 2023-24 but does not contain any 2026 completion statistics.",
+    "relevant_doc_ids": [],
+    "type": "unanswerable"
+  }
+]

@@ -12,10 +12,60 @@ from src.ingestion.chunk import load_chunks
 from src import config
 from src.retrieval.pipeline import retrieve as pipeline_retrieve
 
-# Filled in from the actual corpus after ingestion (see scripts/build_eligibility_rules.py
-# note in README "Design decisions"). Each rule cites the chunk_id it was read from so an
-# answer can point back to a verifiable source instead of asserting a bare number.
-ELIGIBILITY_RULES: dict[str, dict] = {}
+ACRE_TO_HECTARE = 0.404686
+
+# Transcribed directly from the ingested PDFs (see source_doc_id/source_page on each
+# rule -- run document_lookup or open the PDF at that page to verify). Ayushman
+# Bharat/PM-JAY is deliberately absent: its eligibility runs off SECC 2011
+# deprivation/occupational criteria, not a numeric income or land threshold, so a
+# hardcoded rule for it would misrepresent how the scheme actually works -- it falls
+# through to the retrieval fallback below instead.
+ELIGIBILITY_RULES: dict[str, dict] = {
+    "pm_kisan": {
+        "scheme_name": "PM-KISAN",
+        "max_land_hectares": 2.0,
+        "benefit": "Rs. 6,000/year per family, in 3 installments of Rs. 2,000 (land records cutoff 01.02.2019)",
+        "caveats": (
+            "Land-holding is the sole numeric criterion; families are also excluded if any "
+            "member is a current/former constitutional post holder, current/former MP/MLA, "
+            "serving/retired government or PSU employee (excluding Group D/MTS), a pensioner "
+            "drawing >= Rs.10,000/month, an income-tax payer in the last assessment year, or a "
+            "registered professional (doctor/engineer/lawyer/CA/architect) in practice."
+        ),
+        "source_note": "PM-KISAN FAQ, Q3/Q6/Q11/Q12",
+        "source_doc_id": "pmkisan_faq",
+        "source_page": 1,
+    },
+    "pmay_urban_ews": {
+        "scheme_name": "PMAY-Urban CLSS (EWS)",
+        "max_annual_income_inr": 300000,
+        "benefit": "6.5% interest subsidy on home loans up to Rs. 6 lakh; carpet area up to 30 sq.m.",
+        "caveats": "Beneficiary family must not already own a pucca house anywhere in India.",
+        "source_note": "CLSS for EWS/LIG Operational Guidelines, Definitions section",
+        "source_doc_id": "pmay_urban_clss_ews_lig_guidelines",
+        "source_page": 6,
+    },
+    "pmay_urban_lig": {
+        "scheme_name": "PMAY-Urban CLSS (LIG)",
+        "min_annual_income_inr": 300001,
+        "max_annual_income_inr": 600000,
+        "benefit": "6.5% interest subsidy on home loans up to Rs. 6 lakh; carpet area up to 60 sq.m.",
+        "caveats": "Beneficiary family must not already own a pucca house anywhere in India.",
+        "source_note": "CLSS for EWS/LIG Operational Guidelines, Definitions section",
+        "source_doc_id": "pmay_urban_clss_ews_lig_guidelines",
+        "source_page": 6,
+    },
+    "west_bengal_krishak_bandhu": {
+        "scheme_name": "West Bengal Krishak Bandhu",
+        "benefit": (
+            "Rs. 10,000/year (2 installments) for farmers with >=1 acre cultivable land; "
+            "pro-rata down to a minimum of Rs. 4,000/year for less than 1 acre"
+        ),
+        "source_note": "Krishak Bandhu FAQ, Q4",
+        "source_doc_id": "west_bengal_krishak_bandhu_faq",
+        "source_page": 5,
+    },
+}
 
 
 @tool
@@ -48,23 +98,36 @@ def eligibility_calculator(
 
     checks = []
     verdict = "ELIGIBLE"
-    if annual_income_inr is not None and "max_annual_income_inr" in rule:
-        ok = annual_income_inr <= rule["max_annual_income_inr"]
-        checks.append(f"income {annual_income_inr} <= {rule['max_annual_income_inr']}: {'OK' if ok else 'FAIL'}")
-        verdict = verdict if ok else "NOT ELIGIBLE"
-    if land_holding_acres is not None and "max_land_acres" in rule:
-        ok = land_holding_acres <= rule["max_land_acres"]
-        checks.append(f"land {land_holding_acres} <= {rule['max_land_acres']}: {'OK' if ok else 'FAIL'}")
+
+    if annual_income_inr is not None:
+        if "max_annual_income_inr" in rule:
+            ok = annual_income_inr <= rule["max_annual_income_inr"]
+            checks.append(f"income {annual_income_inr} <= {rule['max_annual_income_inr']}: {'OK' if ok else 'FAIL'}")
+            verdict = verdict if ok else "NOT ELIGIBLE"
+        if "min_annual_income_inr" in rule:
+            ok = annual_income_inr >= rule["min_annual_income_inr"]
+            checks.append(f"income {annual_income_inr} >= {rule['min_annual_income_inr']}: {'OK' if ok else 'FAIL'}")
+            verdict = verdict if ok else "NOT ELIGIBLE"
+    if land_holding_acres is not None and "max_land_hectares" in rule:
+        land_hectares = land_holding_acres * ACRE_TO_HECTARE
+        ok = land_hectares <= rule["max_land_hectares"]
+        checks.append(
+            f"land {land_holding_acres} acres ({land_hectares:.2f} ha) <= "
+            f"{rule['max_land_hectares']} ha: {'OK' if ok else 'FAIL'}"
+        )
         verdict = verdict if ok else "NOT ELIGIBLE"
     if category is not None and "eligible_categories" in rule:
         ok = category.strip().lower() in rule["eligible_categories"]
         checks.append(f"category '{category}' in {rule['eligible_categories']}: {'OK' if ok else 'FAIL'}")
         verdict = verdict if ok else "NOT ELIGIBLE"
 
+    caveats = f"\nCaveats: {rule['caveats']}" if "caveats" in rule else ""
     return (
         f"Scheme: {rule['scheme_name']}\nVerdict: {verdict}\n"
-        f"Checks: {'; '.join(checks) if checks else 'no applicable criteria provided'}\n"
-        f"Source: {rule['source_chunk_id']} ({rule['source_note']})"
+        f"Benefit if eligible: {rule['benefit']}\n"
+        f"Checks: {'; '.join(checks) if checks else 'no applicable criteria provided'}"
+        f"{caveats}\n"
+        f"Source: {rule['source_doc_id']} p.{rule['source_page']} ({rule['source_note']})"
     )
 
 
