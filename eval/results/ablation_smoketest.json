@@ -1,22 +1,22 @@
 {
   "dense_512": {
     "config": "dense_512",
-    "n_questions": 8,
-    "n_completed": 8,
+    "n_questions": 5,
+    "n_completed": 5,
     "retrieval": {
-      "recall@5": 0.9285714285714286,
-      "precision@5": 0.2738095238095238,
+      "recall@5": 0.9,
+      "precision@5": 0.26666666666666666,
       "mrr": 0.6666666666666667,
-      "n": 7
+      "n": 5
     },
     "generation": {
       "faithfulness": 1.0,
-      "answer_relevance": 0.975,
+      "answer_relevance": 1.0,
       "hallucination_rate": 0.0,
-      "refusal_accuracy": 0.0
+      "refusal_accuracy": null
     },
-    "latency_p50_s": 19.173,
-    "latency_p95_s": 40.781,
+    "latency_p50_s": 15.263,
+    "latency_p95_s": 36.267,
     "avg_retry_count": 0.0,
     "cost_per_query_usd": 0.0,
     "errors": []
