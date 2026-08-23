@@ -4,7 +4,7 @@ import re
 
 from groq import RateLimitError
 from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from src import config
 from src.agent.state import GraphState, result_to_document
@@ -96,8 +96,11 @@ def rewrite_node(state: GraphState) -> dict:
 
 _CITATION_RULE = (
     "Every factual claim must carry an inline citation using plain ASCII square "
-    "brackets exactly like this: [chunk_id], matching a chunk_id from the context "
-    "(not any other bracket style)."
+    "brackets exactly like this: [chunk_id], where chunk_id is copied exactly from "
+    "one of the [chunk_id] labels in the retrieved context below (not any other "
+    "bracket style, and never an invented or example chunk_id). Syntax example "
+    "only -- do not copy this wording or reuse this chunk_id, it will not exist "
+    "in your actual context: \"<your claim> [example_doc#c1].\""
 )
 _REFUSAL_RULE = (
     "If the context is insufficient to answer confidently, say so explicitly and "
@@ -167,7 +170,17 @@ def generate_node(state: GraphState) -> dict:
         tool_map = {t.name: t for t in TOOLS}
         for call in response.tool_calls:
             tool_fn = tool_map.get(call["name"])
-            output = tool_fn.invoke(call["args"]) if tool_fn else f"Unknown tool: {call['name']}"
+            if tool_fn is None:
+                output = f"Unknown tool: {call['name']}"
+            else:
+                try:
+                    output = tool_fn.invoke(call["args"])
+                except ValidationError as e:
+                    # Local models (Ollama) sometimes send malformed args (e.g. the
+                    # literal string "None" instead of omitting an optional field).
+                    # Surface the failure to the model as a tool result rather than
+                    # crashing the request, so it can recover from context alone.
+                    output = f"Tool call failed with invalid arguments: {e}"
             messages.append(ToolMessage(content=str(output), tool_call_id=call["id"]))
         response = llm.invoke(messages)
 
