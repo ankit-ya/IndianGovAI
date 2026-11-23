@@ -1,7 +1,5 @@
 # Indian Gov Scheme RAG Assistant
 
-*(demo GIF placeholder — recorded once the API is deployed)*
-
 A self-correcting agentic RAG assistant over Indian government welfare scheme documentation
 (PMAY, Ayushman Bharat, PM-KISAN, and state schemes), built as a LangGraph state machine with
 hybrid retrieval and a measured evaluation harness.
@@ -14,15 +12,20 @@ scanned image-only PDFs with no text layer (OCR was out of scope — see "What d
 
 ## Results
 
-*(ablation table — filled in from `eval/results/ablation.json` once the corpus and eval set are built; see `eval/run_eval.py --all`)*
+**Smoke test (measured):** the dense-only, 512-token-chunk baseline on a stratified 5-question sample of the
+eval set (`python -m eval.run_eval --config dense_512 --limit 5`, raw output in `eval/results/ablation_smoketest.json`):
 
-| Configuration | Recall@5 | Faithfulness | p95 latency |
-|---|---|---|---|
-| Dense only, 512-token chunks | — | — | — |
-| Dense only, 256-token chunks | — | — | — |
-| Hybrid (dense + BM25) | — | — | — |
-| Hybrid + cross-encoder rerank | — | — | — |
-| Hybrid + rerank + agent retry | — | — | — |
+| Configuration | Questions | Recall@5 | MRR | Faithfulness | Hallucination rate | p50 / p95 latency |
+|---|---|---|---|---|---|---|
+| Dense only, 512-token chunks | 5 | 0.90 | 0.67 | 1.00 | 0.00 | 15.3 s / 36.3 s |
+
+Five questions is a smoke test, not a benchmark: it shows the pipeline and metrics run end to end, not how well
+the system performs. Latency is dominated by the LLM calls (Groq free tier / local Ollama), not by retrieval.
+
+**Full ablation (not run yet):** the harness compares five configurations on all 50 questions: dense 512,
+dense 256, hybrid (dense + BM25), hybrid + cross-encoder rerank, and hybrid + rerank + agent retry. Run it with
+`python -m eval.run_eval --all`; results are written to `eval/results/ablation.json`. The full run was blocked by
+the Groq free-tier token cap (see "What didn't work") and needs the Ollama fallback to finish.
 
 ## Architecture
 
@@ -44,9 +47,9 @@ flowchart LR
 
 ## Design decisions
 
-- **Chunking**: *(fill in after the ablation — 256 vs 512 token tradeoff, with the actual numbers)*
+- **Chunking**: the corpus is indexed twice, at 256 and 512 tokens (2,464 vs 1,235 chunks), so the ablation can compare precision of small chunks against context of large ones on the same questions.
 - **Hybrid over dense-only**: BM25 catches exact scheme names, section numbers, and rupee figures that embeddings blur together.
-- **Reranking**: cross-encoder scores (query, chunk) pairs jointly; consistently worth double-digit recall points at the cost of latency, so it only runs over the top ~20 fused candidates.
+- **Reranking**: a cross-encoder scores each (query, chunk) pair jointly, which is more accurate than comparing separate embeddings but slower, so it only runs over the top ~20 fused candidates. How much it adds on this corpus is what the full ablation measures.
 - **Ground truth is document-level, not chunk-level**: chunk boundaries move between the 256/512-token ablation configs, so `relevant_doc_ids` in the eval set names source PDFs, not chunk IDs — the one thing that stays stable across every config being compared.
 - **Retry cap = 2**: the single most common bug in agentic RAG is an unbounded grade→rewrite loop; capping it and forcing `generate` with an explicit "insufficient information" instruction is a deliberate design choice, not an oversight.
 
@@ -58,7 +61,6 @@ flowchart LR
 - **Groq's model lineup had moved on**: `llama-3.1-8b-instant` (the spec's suggested model) is no longer served; swapped to `openai/gpt-oss-20b`, currently available on the free tier.
 - **`with_structured_output`'s default mode (forced tool-calling) doesn't work reliably against Groq's oss models** — they frequently answer the JSON schema directly as message content instead of emitting a tool call, which Groq's API then rejects with a 400 even though the JSON was correct. Fixed by passing `method="json_mode"` everywhere structured output is used (`grade_node`, the eval judge).
 - **Groq's free tier caps `openai/gpt-oss-20b` at 200,000 tokens/day**, and the first full-ablation attempt burned the *entire* daily budget on well under one of the five configs (5 retrieved chunks × up to 512 tokens each, sent to 2-3 LLM calls per question, 50 questions). Cut spend by truncating each chunk to ~450 chars in prompts and merging the separate faithfulness/relevance judge calls into one (`eval/metrics.py:judge_answer`) — real reduction, not just a workaround, since it's a straightforwardly wasteful default (5 untruncated chunks repeated across 3 separate LLM calls per question). Still not enough headroom to finish the full ablation same-day on the free tier alone, so **Ollama (local, no token ceiling) is the fallback provider** for completing the full run — see Setup.
-- *(ablation regressions added here once `eval/run_eval.py --all` has been run)*
 
 ## Setup
 
@@ -101,4 +103,4 @@ Then in `.env`: `LLM_PROVIDER=ollama` (defaults to `OLLAMA_MODEL=llama3.1`, `OLL
 - **How do you know the grade step isn't just noisy?** Caught this directly during testing: the identical (question, context) pair, sent to Groq's `openai/gpt-oss-20b` at `temperature=0`, returned `sufficient=True` on 3/3 isolated calls but still triggered 2 retries inside the full agent run on the same question. Hosted LLM serving (continuous batching, floating-point non-associativity across batch compositions) isn't perfectly deterministic even at temp 0 — which is exactly why the retry cap matters: the system self-corrects via the forced-generate fallback instead of relying on every grade call being consistent.
 - **What does BM25 catch that embeddings miss?** Exact scheme names, section/clause numbers, and rupee figures — e.g. a query for "clause 3.3" or "Rs. 6,000" benefits from exact lexical match in a way dense cosine similarity over paraphrased text doesn't guarantee.
 - **What would break at 100,000 documents?** The current retrieval stack (Qdrant local on-disk mode, in-memory BM25 rebuilt from a JSON chunk file) is fine at ~1,200-2,500 chunks but doesn't scale as-is: BM25 gets rebuilt from scratch on first use per process (`eval/../src/retrieval/sparse.py:_load_bm25`) rather than persisted, and Qdrant's local mode is single-process or a real server. At 100k docs you'd want Qdrant in server mode (already wired via `QDRANT_URL` + docker-compose), a persisted/incremental BM25 or sparse index, and probably async/batched embedding during ingestion rather than the current single-process loop.
-- *(latency/cost breakdown filled in once the full ablation has real p50/p95 numbers to point to)*
+- **Where does the latency go?** In the smoke test p50 was 15.3 s and p95 36.3 s, almost all of it LLM calls (grade + generate, plus rewrite on retries) on a free hosted tier or a local 8B model. Retrieval and reranking are sub-second at this corpus size; a paid low-latency endpoint and streaming the answer would be the first fixes.
